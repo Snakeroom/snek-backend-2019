@@ -1,0 +1,26 @@
+extends template.pug
+
+block content
+    h2.ui.header Users
+    div.users
+        table.ui.celled.table
+            thead
+                th.two.wide ID
+                th.seven.wide Username
+                th.four.wide Date Added
+                th.three.wide Actions
+            tbody
+                each m in users
+                    tr
+                        td #{m.id}
+                        td
+                            a(href="https://reddit.com/u/" + m.name, target="_blank") #{m.name}
+                            if m.admin
+                                span &nbsp;(admin)
+                        td #{m.date}
+                        td
+                            button.ui.button.red Remove
+                            if m.admin
+                                button.ui.button Revoke Admin
+                            else
+                                button.ui.button Make Admin

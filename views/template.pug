@@ -1,0 +1,13 @@
+html(lang="en")
+    head
+        title Sneknet Admin Dashboard
+        link(rel="stylesheet" href="http://cdn.witch.gq/css/semantic.min.css")
+        link(rel="stylesheet" href="/static/style.css")
+        block head
+    body
+        div.header
+            h1.ui.header Sneknet Admin
+            p.ui.meta Signed in as <b>/u/#{user.name}</b>
+            div.ui.divider
+        div.page
+            block content

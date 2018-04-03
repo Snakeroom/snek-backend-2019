@@ -1,0 +1,26 @@
+{
+  "name": "sphere",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "connect-pg-simple": "^4.2.1",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "got": "^8.3.0",
+    "hjson": "^3.1.1",
+    "grant-express": "^4.1.0",
+    "moment": "^2.22.0",
+    "pug": "^2.0.3",
+    "grant": "^4.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "offbeatwitch",
+  "license": "MIT"
+}
