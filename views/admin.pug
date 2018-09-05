@@ -1,4 +1,17 @@
 extends template.pug
 
 block content
-    p Hi, world!
+    h1.ui.header Sneknet Admin Console
+    .ui.divider
+    h3.ui.top.attached.header Stats
+    .ui.attached.segment
+        .ui.statistics
+            .statistic
+                .label Total Users
+                .value #{stats.users}
+            .statistic
+                .label Circles Joined
+                .value 0
+            .statistic
+                .label Circles Waiting
+                .value 0

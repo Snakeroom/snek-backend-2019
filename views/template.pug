@@ -5,9 +5,20 @@ html(lang="en")
         link(rel="stylesheet" href="/static/style.css")
         block head
     body
-        div.header
-            h1.ui.header Sneknet Admin
-            p.ui.meta Signed in as <b>/u/#{user.name}</b>
-            div.ui.divider
-        div.page
+        div.ui.left.fixed.vertical.inverted.menu.sidebar.visible
+            .item
+                img.ui.mini.image(src="/static/snek.png")
+            a.item(href="/admin/dash")
+                | Home
+                i.home.icon
+            a.item(href="/admin/dash/users")
+                | Users
+                i.users.icon
+            a.item(href="/admin/dash/circles")
+                | Circles
+                i.circle.notched.icon
+            .disabled.item
+                | Signed in as <b>/u/#{user.name}</b>
+                i.user.icon
+        div.page.pusher
             block content

@@ -59,26 +59,45 @@ app.use "/admin", (req, res, next) ->
         return res.redirect "/connect/reddit"
     
     req.reddit.getUserInfo().then (user) ->
-        req.user = user
-        if config.adminstrators.indexOf(user.id) != -1
-            res.locals.user = user
-            next()
-        else
-            res.status(401).send "You're not an administrator!"
+        req.user = res.locals.user = user
+        
+        db.getUser(user.id).then (dbuser) ->
+            if dbuser.admin
+                next()
+            else
+                res.status(401).send "You're not an administrator!"
+        .catch (err) ->
+            next(err)
     .catch (err) ->
         next(err)
 
 app.get "/admin/dash", (req, res) ->
-    res.render "admin.pug"
+    db.fastCount("users").then (n) ->
+        stats =
+            users: n
+        
+        res.render "admin.pug", stats: stats
 
 app.get "/admin/dash/users", (req, res) ->
     db.getAllUsers().then (users) ->
         res.render "admin-users.pug", users: users
 
+app.get "/admin/dash/circles", (req, res) ->
+    res.render "admin-circles.pug"
+
 app.delete "/admin/dash/users/:id", (req, res) ->
-    
+    db.deleteUser(req.params.id).then ->
+        res.send success: true
+    .catch (err) ->
+        res.send success: false
 
 app.get "/admin/info", (req, res, next) ->
     res.send req.user
+
+app.use (err, req, res, next) ->
+    unless res.locals.user
+        res.locals.user = {name: "unknown"}
+    
+    res.render "error.pug", error: err
 
 app.listen 4003

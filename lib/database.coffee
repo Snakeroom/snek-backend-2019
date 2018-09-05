@@ -15,5 +15,11 @@ module.exports =
         pool.query("SELECT * FROM users").then (res) ->
             res.rows.map (u) ->
                 return id: u.id, name: u.username, date: moment(parseInt(u.date)).format("YYYY-MM-DD HH:mm"), admin: u.admin
+    getUser: (id) ->
+        pool.query("SELECT * FROM users WHERE id=$1", [id]).then (res) ->
+            res.rows[0]
     deleteUser: (id) ->
         pool.query("DELETE FROM users WHERE id=$1", [id])
+    fastCount: (table) ->
+        pool.query("select reltuples as row_count from pg_class where relname=$1", [table]).then (r) ->
+            r.rows[0].row_count

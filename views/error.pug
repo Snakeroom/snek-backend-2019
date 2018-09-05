@@ -1,0 +1,6 @@
+extends template.pug
+
+block content
+    h1.ui.header oh no! #{error.code || error.statusCode} :(
+    p there was a problem retrieving that page. try again, or contact offbeatwitch if the problem persists.
+    code #{error.message}
