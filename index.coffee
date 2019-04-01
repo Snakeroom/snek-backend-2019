@@ -1,6 +1,7 @@
 express = require "express"
 session = require "express-session"
 Grant = require "grant-express"
+ws = require "uws"
 PostgresStore = require("connect-pg-simple")(session)
 
 config = require "./lib/config"
@@ -17,7 +18,7 @@ grantOpts =
     reddit:
         key: config.reddit.client_id
         secret: config.reddit.client_secret
-        scope: ["identity", "vote"]
+        scope: ["identity"]
         custom_params:
             duration: "permanent"
 
