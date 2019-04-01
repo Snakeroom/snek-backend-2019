@@ -1,6 +1,29 @@
 extends template.pug
 
 block content
-    h2.ui.header Circles
+    h2.ui.header Scenes
+    div.scenes
+        table.ui.celled.table
+            thead
+                th.three.wide Scene ID
+                th.three.wide Post Fullname
+                th.four.wide Actions
+            tbody
+                each s in scenes
+                    tr
+                        td #{s.scene_id}
+                        td #{s.fullname}
+                        td
+                            a(href="scenes/" + s.scene_id + "/delete") Delete Scene
     .ui.segment
-        
+        h3.ui.header Add New Scene
+        form.ui.form
+            .field
+                label Scene
+                select.ui.fluid.dropdown(name="sceneId")
+                    each sceneId in redditScenes
+                        option(value=sceneId) #{sceneId + 1}
+            .field
+                label Post Fullname
+                input(name="fullname" placeholder="t3_xxxxxx" type="text")
+            button.ui.button(type="submit") Add Scene

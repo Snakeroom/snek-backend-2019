@@ -19,8 +19,8 @@ block content
                                 span &nbsp;(admin)
                         td #{m.date}
                         td
-                            button.ui.button.red Remove
+                            a.ui.button.red(href="users/" + m.id + "/delete") Remove
                             if m.admin
-                                button.ui.button Revoke Admin
+                                a.ui.button(href="users/" + m.id + "/revoke_admin") Revoke Admin
                             else
-                                button.ui.button Make Admin
+                                a.ui.button(href="users/" + m.id + "/make_admin") Make Admin
