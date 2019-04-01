@@ -5,24 +5,24 @@ block content
     div.scenes
         table.ui.celled.table
             thead
-                th.three.wide Scene ID
+                th.one.wide Scene ID
                 th.three.wide Post Fullname
                 th.four.wide Actions
             tbody
                 each s in scenes
                     tr
-                        td #{s.scene_id}
+                        td #{parseInt(s.scene_id) + 1}
                         td #{s.fullname}
                         td
-                            a(href="scenes/" + s.scene_id + "/delete") Delete Scene
+                            a.ui.button.red(href="scenes/" + s.scene_id + "/delete") Delete Scene
     .ui.segment
         h3.ui.header Add New Scene
-        form.ui.form
+        form.ui.form(method="POST")
             .field
                 label Scene
                 select.ui.fluid.dropdown(name="sceneId")
-                    each sceneId in redditScenes
-                        option(value=sceneId) #{sceneId + 1}
+                    each item, index in redditScenes
+                        option(value=index) Scene #{index + 1}
             .field
                 label Post Fullname
                 input(name="fullname" placeholder="t3_xxxxxx" type="text")

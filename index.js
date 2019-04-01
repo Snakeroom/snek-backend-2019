@@ -33,6 +33,18 @@ const app = express();
 const server = http.createServer(app);
 const wss = new ws.WebSocketServer({ server });
 
+reddit.getWebSocket().then(url => {
+    const redditws = new ws.WebSocket(url);
+
+    redditws.on("message", (data) => parseRedditMessage( JSON.parse(data) ));
+    redditws.on("error", err => console.error(err));
+});
+
+const state = {
+    chapters: [],
+    scenes: []
+};
+
 app.set("view engine", "pug");
 
 app.use("/static", express.static(`${__dirname}/static`));
@@ -49,8 +61,20 @@ app.get("/v1/targets", (req, res) =>
     db.getAllScenes().then(scenes =>
         res.send({
             "targets": scenes.map(s => {
-                let a = s.scene_id.split("_")
-                return { chapter: parseInt(a[0]), scene: parseInt(a[1]), fullname: s.fullname };
+                let a = s.scene_id.split("_");
+                let chapter = parseInt(a[0]);
+                let scene = parseInt(a[1]);
+
+                let data = { chapter, scene, fullname: s.fullname };
+
+                if (state.chapters[chapter]) {
+                    if (state.chapters[chapter].scenes[scene]) {
+                        let extra = state.chapters[chapter].scenes[scene];
+                        data.extra = { url: extra.gif_url, start_time: extra.start_time, lock_time: extra.lock_time, width: extra.source_width, height: extra.source_height };
+                    }
+                }
+
+                return data;
             })
         })
     ).catch(err => res.send({ "error": "problem retrieving the scenes :(" }))
@@ -117,13 +141,13 @@ app.get("/admin/dash/users", (req, res) =>
 );
 
 app.get("/admin/dash/scenes", (req, res) =>
-    db.getAllScenes().then(scenes => res.render("admin-circles.pug", { scenes }))
+    db.getAllScenes().then(scenes => res.render("admin-circles.pug", { scenes, redditScenes: state.scenes }))
 );
 
-app.post("/admin/dash/scenes/:id", bodyParser.urlencoded(extended: false), (req, res, next) =>
+app.post("/admin/dash/scenes", bodyParser.urlencoded({ extended: false }), (req, res, next) =>
     db.addSceneItem(req.body.sceneId, req.body.fullname)
         .then(() => {
-            wss.broadcast(JSON.stringify({ "type": "new-scene", "fullname": req.body.fullname }));
+            broadcastScenes();
             
             res.redirect("/admin/dash/scenes");
         }).catch(err => next(err))
@@ -131,8 +155,11 @@ app.post("/admin/dash/scenes/:id", bodyParser.urlencoded(extended: false), (req,
 
 app.get("/admin/dash/scenes/:id/delete", (req, res, next) =>
     db.deleteScene(req.params.id)
-        .then(() => res.redirect("/admin/dash/scenes"))
-        .catch(err => next(err))
+        .then(() => {
+            broadcastScenes();
+            
+            res.redirect("/admin/dash/scenes");
+        }).catch(err => next(err))
 );
 
 app.get("/admin/dash/users/:id/make_admin", (req, res, next) =>
@@ -166,19 +193,47 @@ app.use(function(err, req, res, next) {
 function handleSocketMessage(msg) {
     if (msg.type == "science") {
         // todo: read params
+        // db.publishScience(msg.username, msg.upvoted);
     }
 }
 
-wss.on("connection", (socket) => {
-    db.getAllScenes().then(scenes =>
-        socket.send(
-            JSON.stringify({ "type": "scenes", "fullnames": scenes.map(s => s.fullname) })
-        )
-    );
+function broadcastScenes(socket) {
+    db.getAllScenes().then(scenes => {
+        let data = JSON.stringify({ "type": "scenes", "fullnames": scenes.map(s => s.fullname) })
 
+        if (socket)
+            socket.send(data);
+        else
+            wss.broadcast(data);
+    });
+}
+
+wss.on("connection", (socket) => {
+    broadcastScenes(socket);
+    
     socket.on("message", (data) =>
         handleSocketMessage(JSON.parse(data))
     );
 });
+
+function parseRedditMessage(msg) {
+    if (msg.type == "heartbeat") {
+        state.scenes = [];
+
+        Object.keys(msg.payload.remaining_scenes).forEach(key => {
+            let keys = key.split("_");
+            let chapterid = parseInt(keys[0]);
+            let scene = parseInt(keys[1]);
+
+            let chapter = state.chapters[chapterid];
+            if (!chapter) chapter = { scenes: [] };
+            if (!chapter.scenes) chapter.scenes = [];
+
+            chapter.scenes[scene] = msg.payload.remaining_scenes[key];
+            state.scenes[scene] = msg.payload.remaining_scenes[key];
+            state.chapters[chapterid] = chapter;
+        });
+    }
+}
 
 server.listen(4003);
