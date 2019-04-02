@@ -70,9 +70,9 @@ app.use(session({
 app.use(grant);
 
 app.get("/v1/targets", (req, res) =>
-    db.getAllScenes().then(scenes =>
+    db.getAllSortedScenes().then(scenes =>
         asyncio.map(scenes, (s, cb) => {
-            let scene = parseInt(s.scene_id);
+            let scene = s.scene_id;
             let data = { scene, chapter: state.currentChapter, fullname: s.fullname };
 
             if (state.postCache[s.fullname]) {

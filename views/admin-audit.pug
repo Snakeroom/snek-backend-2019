@@ -7,6 +7,7 @@ block content
             thead
                 th.collapsing &#35;
                 th.collapsing Time
+                th.collapsing User
                 th Description
                 th.collapsing Method
                 th URL
@@ -15,11 +16,12 @@ block content
                     tr
                         td #{entry.id}
                         td #{entry.timestamp.fromNow()}
+                        td #{entry.username}
                         td #{entry.action}
                         td #{entry.method}
                         td #{entry.path}
             tfoot
-                tr: th(colspan="5")
+                tr: th(colspan="6")
                     - var n = 1;
                     .ui.right.floated.pagination.menu
                         a.icon.item(href=Math.max(1, page - 1))
