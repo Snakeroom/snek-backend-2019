@@ -69,7 +69,7 @@ app.get("/v1/targets", (req, res) =>
                 data.extra = { url: post.url, start_time: post.created_utc };
                 cb(data);
             });
-        }, result => res.send({ targets: result }))
+        }, (err, results) => res.send({ targets: result }))
     ).catch(err => res.send({ "error": "problem retrieving the scenes :(" }))
 );
 
