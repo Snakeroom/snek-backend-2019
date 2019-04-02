@@ -124,7 +124,13 @@ app.use("/admin", function(req, res, next) {
                 return res.status(401).send("You're not an administrator!");
             }
         }).catch(err => next(err));
-    }).catch(err => res.redirect("/connect/reddit"));
+    }).catch(err =>
+        req.reddit.refreshToken().then(() =>
+            next(null)
+        )
+    }).catch(err =>
+        next(err)
+    );
 });
 
 app.get("/admin/dash", (req, res) =>
@@ -182,6 +188,14 @@ app.get("/admin/dash/users/:id/revoke_admin", (req, res, next) =>
 
 app.get("/admin/info", (req, res, next) => res.send(req.user));
 
+app.get("/admin/logout", (req, res, next) =>
+    req.session.destroy(err => {
+        if (err) return next(err);
+
+        return res.render("logged-out.pug");
+    })
+);
+
 app.use(function(err, req, res, next) {
     if (!res.locals.user) {
         res.locals.user = {name: "unknown"};
@@ -193,7 +207,7 @@ app.use(function(err, req, res, next) {
 function handleSocketMessage(msg) {
     if (msg.type == "science") {
         // todo: read params
-        // db.publishScience(msg.username, msg.upvoted);
+        db.recordScience(msg.username, msg.upvoted);
     }
 }
 
