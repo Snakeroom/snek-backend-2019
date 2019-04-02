@@ -203,13 +203,24 @@ app.get("/admin/dash/scenes", (req, res, next) =>
 );
 
 app.post("/admin/dash/scenes", bodyParser.urlencoded({ extended: false }), (req, res, next) =>
-    db.addSceneItem(req.body.sceneId, req.body.fullname)
+    (req.body.postUrl ?
+        reddit.fetchUrlInfo(req.body.postUrl).then(post =>
+            post.name || req.body.fullname
+        ) :
+        Promise.resolve(req.body.fullname)
+    ).then((fullname) => {
+        if (fullname == null)
+            throw new Error("Invalid post URL! It should look like this: https://www.reddit.com/r/sequence/comments/b8ftwe/act_2_scene_32/");
+        else return fullname
+    }).then(fullname =>
+        db.addSceneItem(req.body.sceneId, fullname)
         .then(() => {
-            req.scheduleAuditLog(`Added post [reddit:${req.body.fullname}] as target for scene ${req.body.sceneId}`);
+            req.scheduleAuditLog(`Added post [reddit:${fullname}] as target for scene ${req.body.sceneId}`);
             broadcastScenes();
             
             res.redirect("/admin/dash/scenes");
-        }).catch(err => next(err))
+        })
+    ).catch(err => next(err))
 );
 
 app.get("/admin/dash/scenes/:id/delete", (req, res, next) =>

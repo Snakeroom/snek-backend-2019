@@ -26,6 +26,6 @@ block content
                     each item, index in redditScenes
                         option(value=index) Scene #{index}
             .field
-                label Post Fullname
-                input(name="fullname" placeholder="t3_xxxxxx" type="text")
+                label Post URL (comments, not direct image)
+                input(name="postUrl" placeholder="https://reddit.com/r/sequence/comments/xxxxxx..." type="text")
             button.ui.button(type="submit") Add Scene
