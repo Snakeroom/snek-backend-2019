@@ -6,7 +6,6 @@ const bodyParser = require("body-parser");
 const Grant = require("grant-express");
 const ws = require("@clusterws/cws");
 const PostgresStore = require("connect-pg-simple")(session);
-
 const Sentry = require('@sentry/node');
 
 const config = require("./lib/config");
@@ -147,7 +146,7 @@ app.use("/admin", function(req, res, next) {
         }).catch(err => next(err));
     }).catch(err =>
         req.reddit.refreshToken().then(() =>
-            next(null)
+            res.redirect(req.originalUrl)
         )
     ).catch(err =>
         next(err)
