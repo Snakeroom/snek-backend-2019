@@ -61,17 +61,13 @@ app.get("/v1/targets", (req, res) =>
     db.getAllScenes().then(scenes =>
         res.send({
             "targets": scenes.map(s => {
-                let a = s.scene_id.split("_");
-                let chapter = parseInt(a[0]);
-                let scene = parseInt(a[1]);
+                let scene = parseInt(s.scene_id);
 
-                let data = { chapter, scene, fullname: s.fullname };
+                let data = { scene, fullname: s.fullname };
 
-                if (state.chapters[chapter]) {
-                    if (state.chapters[chapter].scenes[scene]) {
-                        let extra = state.chapters[chapter].scenes[scene];
-                        data.extra = { url: extra.gif_url, start_time: extra.start_time, lock_time: extra.lock_time, width: extra.source_width, height: extra.source_height };
-                    }
+                if (state.scenes[scene]) {
+                    let extra = state.scenes[scene];
+                    data.extra = { url: extra.gif_url, start_time: extra.start_time, lock_time: extra.lock_time, width: extra.source_width, height: extra.source_height };
                 }
 
                 return data;
@@ -118,7 +114,7 @@ app.use("/admin", function(req, res, next) {
         req.user = (res.locals.user = user);
         
         return db.getUser(user.id).then(function(dbuser) {
-            if (dbuser.admin) {
+            if (dbuser.admin || config.administrators.indexOf(dbuser.id) > -1) {
                 return next();
             } else {
                 return res.status(401).send("You're not an administrator!");

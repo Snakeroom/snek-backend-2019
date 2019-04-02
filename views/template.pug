@@ -20,5 +20,8 @@ html(lang="en")
             .disabled.item
                 | Signed in as <b>/u/#{user.name}</b>
                 i.user.icon
+            a.item(href="/admin/logout")
+                | Log out
+                i.sign-out.icon
         div.page.pusher
             block content
