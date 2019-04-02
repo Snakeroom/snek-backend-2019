@@ -7,9 +7,15 @@ const Grant = require("grant-express");
 const ws = require("@clusterws/cws");
 const PostgresStore = require("connect-pg-simple")(session);
 
+const Sentry = require('@sentry/node');
+
 const config = require("./lib/config");
 const reddit = require("./lib/reddit");
 const db = require("./lib/database");
+
+Sentry.init({
+    dsn: config.sentry
+});
 
 const grantOpts = {
     server: {
@@ -38,7 +44,10 @@ reddit.getWebSocket().then(url => {
     const redditws = new ws.WebSocket(url);
 
     redditws.on("message", (data) => parseRedditMessage( JSON.parse(data) ));
-    redditws.on("error", err => console.error(err));
+    redditws.on("error", err => {
+        console.error(err);
+        Sentry.captureException(err);
+    });
 });
 
 const state = {
@@ -83,7 +92,12 @@ app.get("/v1/targets", (req, res) =>
                 cb(null, data);
             });
         }, (err, results) => res.send({ targets: results }))
-    ).catch(err => res.send({ "error": "problem retrieving the scenes :(" }))
+    ).catch(err => {
+        res.send({
+            "error": "problem retrieving the scenes :("
+        });
+        Sentry.captureException(err);
+    })
 );
 
 app.get("/auth/callback", function(req, res, next) {
@@ -213,6 +227,8 @@ app.use(function(err, req, res, next) {
         res.locals.user = {name: "unknown"};
     }
     
+    if (err) Sentry.captureException(err);
+
     return res.render("error.pug", {error: err});
 });
 
