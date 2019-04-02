@@ -237,7 +237,7 @@ app.use(function(err, req, res, next) {
 function handleSocketMessage(msg) {
     if (msg.type == "science") {
         // todo: read params
-        db.recordScience(msg.username, msg.upvoted);
+        db.recordScience(msg.uuid, msg.upvoted);
     }
 }
 
