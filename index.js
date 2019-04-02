@@ -134,8 +134,7 @@ app.get("/admin/dash", (req, res) =>
         const stats = {
             users: n[0],
             scenes: n[1],
-            chapter: state.currentChapter,
-            scenes: state.scenes.length
+            chapter: state.currentChapter
         };
         
         return res.render("admin.pug", {stats, scenes: state.scenes});
