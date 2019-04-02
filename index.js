@@ -45,6 +45,7 @@ const state = {
     chapters: {},
     scenes: {},
     postCache: {},
+    wsClientCount: 0,
     currentChapter: -1
 };
 
@@ -147,7 +148,8 @@ app.get("/admin/dash", (req, res) =>
         const stats = {
             users: n[0],
             scenes: n[1],
-            chapter: state.currentChapter
+            chapter: state.currentChapter,
+            wsClients: state.wsClientCount
         };
         
         return res.render("admin.pug", {stats, scenes: state.scenes});
@@ -240,6 +242,12 @@ wss.on("connection", (socket) => {
     socket.on("message", (data) =>
         handleSocketMessage(JSON.parse(data))
     );
+
+    socket.on("close", () =>
+        state.wsClientCount--
+    );
+
+    state.wsClientCount++;
 });
 
 function parseRedditMessage(msg) {

@@ -13,6 +13,9 @@ block content
                 .label Total Upvotes
                 .value 0
             .statistic
+                .label Connected clients
+                .value #{stats.wsClients}
+            .statistic
                 .label Snek Scenes Active
                 .value #{stats.scenes}
             .statistic
@@ -27,6 +30,7 @@ block content
             thead
                 th.one.wide Scene
                 th Top Post
+                th Status
             tbody
                 each scene, i in scenes
                     tr
@@ -34,3 +38,8 @@ block content
                         td
                             a.ui.button.blue(href=scene.gif_url) GIF Link
                             a.ui.button.blue(href="http://reddit.com/by_id/" + scene.link) Post
+                        td
+                            if scene.lock_time < Date.now()
+                                .ui.red.label Locked
+                            else if scene.lock_time - Date.now() < 600000
+                                .ui.orange.label Locking soon
