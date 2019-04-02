@@ -128,7 +128,7 @@ app.use("/admin", function(req, res, next) {
         req.reddit.refreshToken().then(() =>
             next(null)
         )
-    }).catch(err =>
+    ).catch(err =>
         next(err)
     );
 });
