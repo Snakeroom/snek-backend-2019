@@ -136,9 +136,17 @@ app.use("/admin", function(req, res, next) {
     
     return req.reddit.getUserInfo().then(function(user) {
         req.user = (res.locals.user = user);
+        req.scheduleAuditLog = (desc) => {
+            process.nextTick(() =>
+                db.recordAuditTrail(req.user.id, req.method, req.originalUrl, desc)
+                    .catch(err => console.error(err))
+            );
+        }
         
         return db.getUser(user.id).then(function(dbuser) {
             if (dbuser.admin || config.administrators.indexOf(dbuser.id) > -1) {
+                // req.scheduleAuditLog("HTTP call");
+                
                 return next();
             } else {
                 return res.status(401).send("You're not an administrator!");
@@ -173,17 +181,31 @@ app.get("/admin/dash", (req, res) =>
     })
 );
 
-app.get("/admin/dash/users", (req, res) =>
-    db.getAllUsers().then(users => res.render("admin-users.pug", { users }))
+app.get("/admin/dash/users", (req, res, next) =>
+    db.getAllUsers()
+        .then(users => res.render("admin-users.pug", { users }))
+        .catch(err => next(err))
 );
 
-app.get("/admin/dash/scenes", (req, res) =>
-    db.getAllSortedScenes().then(scenes => res.render("admin-circles.pug", { scenes, redditScenes: state.scenes }))
+app.get("/admin/dash/audit/:page", (req, res, next) =>
+    Promise.all([
+        db.getAuditPage(30, 30 * (parseInt(req.params.page) - 1)),
+        db.totalAuditPages(30)
+    ]).then(a => ({ audit: a[0], totalPages: a[1] }) )
+        .then(tup => res.render("admin-audit.pug", { ...tup, page: parseInt(req.params.page) }))
+        .catch(err => next(err))
+);
+
+app.get("/admin/dash/scenes", (req, res, next) =>
+    db.getAllSortedScenes()
+        .then(scenes => res.render("admin-circles.pug", { scenes, redditScenes: state.scenes }))
+        .catch(err => next(err))
 );
 
 app.post("/admin/dash/scenes", bodyParser.urlencoded({ extended: false }), (req, res, next) =>
     db.addSceneItem(req.body.sceneId, req.body.fullname)
         .then(() => {
+            req.scheduleAuditLog(`Added post [reddit:${req.body.fullname}] as target for scene ${req.body.sceneId}`);
             broadcastScenes();
             
             res.redirect("/admin/dash/scenes");
@@ -193,6 +215,7 @@ app.post("/admin/dash/scenes", bodyParser.urlencoded({ extended: false }), (req,
 app.get("/admin/dash/scenes/:id/delete", (req, res, next) =>
     db.deleteScene(req.params.id)
         .then(() => {
+            req.scheduleAuditLog(`Deleted entry for scene ${req.params.id}`);
             broadcastScenes();
             
             res.redirect("/admin/dash/scenes");
@@ -201,18 +224,21 @@ app.get("/admin/dash/scenes/:id/delete", (req, res, next) =>
 
 app.get("/admin/dash/users/:id/make_admin", (req, res, next) =>
     db.setUserAdmin(req.params.id, true)
+        .then(() => req.scheduleAuditLog(`Made user [user:${req.params.id}] an admin.`))
         .then(() => res.redirect("/admin/dash/users"))
         .catch(err => next(err))
 );
 
 app.get("/admin/dash/users/:id/delete", (req, res, next) =>
     db.deleteUser(req.params.id)
+        .then(() => req.scheduleAuditLog(`Removed user [user:${req.params.id}]`))
         .then(() => res.redirect("/admin/dash/users"))
         .catch(err => next(err))
 );
 
 app.get("/admin/dash/users/:id/revoke_admin", (req, res, next) =>
     db.setUserAdmin(req.params.id, false)
+        .then(() => req.scheduleAuditLog(`Revoked admin of user [user:${req.params.id}]`))
         .then(() => res.redirect("/admin/dash/users"))
         .catch(err => next(err))
 );

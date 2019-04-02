@@ -1,0 +1,30 @@
+extends template.pug
+
+block content
+    h2.ui.header Audit Log
+    div.users
+        table.ui.single.line.celled.table
+            thead
+                th.collapsing &#35;
+                th.collapsing Time
+                th Description
+                th.collapsing Method
+                th URL
+            tbody
+                each entry in audit
+                    tr
+                        td #{entry.id}
+                        td #{entry.timestamp.fromNow()}
+                        td #{entry.action}
+                        td #{entry.method}
+                        td #{entry.path}
+            tfoot
+                tr: th(colspan="5")
+                    - var n = 1;
+                    .ui.right.floated.pagination.menu
+                        a.icon.item(href=Math.max(1, page - 1))
+                            i.left.arrow.icon
+                        while n <= Math.min(totalPages, 8)
+                            a.item(href=n) #{n++}
+                        a.icon.item(href=totalPages)
+                            i.right.arrow.icon
