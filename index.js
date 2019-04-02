@@ -44,6 +44,7 @@ reddit.getWebSocket().then(url => {
 const state = {
     chapters: {},
     scenes: {},
+    postCache: {},
     currentChapter: -1
 };
 
@@ -64,8 +65,20 @@ app.get("/v1/targets", (req, res) =>
         asyncio.map(scenes, (s, cb) => {
             let scene = parseInt(s.scene_id);
             let data = { scene, chapter: state.currentChapter, fullname: s.fullname };
+
+            if (state.postCache[s.fullname]) {
+                let post = state.postCache[s.fullname];
+
+                if (Date.now() - post.cache_time < 1800000) {
+                    data.extra = { url: post.url, start_time: post.created_utc };
+                    return cb(null, data);
+                }
+            }
             
             reddit.fetchPost(s.fullname).then(post => {
+                state.postCache[post.name] = post;
+                state.postCache[post.name].cache_time = Date.now();
+                
                 data.extra = { url: post.url, start_time: post.created_utc };
                 cb(null, data);
             });
