@@ -41,8 +41,8 @@ reddit.getWebSocket().then(url => {
 });
 
 const state = {
-    chapters: [],
-    scenes: [],
+    chapters: {},
+    scenes: {},
     currentChapter: -1
 };
 
@@ -236,7 +236,7 @@ wss.on("connection", (socket) => {
 
 function parseRedditMessage(msg) {
     if (msg.type == "heartbeat") {
-        state.scenes = [];
+        state.scenes = {};
 
         Object.keys(msg.payload.remaining_scenes).forEach(key => {
             let keys = key.split("_");
