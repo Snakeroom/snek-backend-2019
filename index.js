@@ -67,7 +67,7 @@ app.get("/v1/targets", (req, res) =>
             
             reddit.fetchPost(s.fullname).then(post => {
                 data.extra = { url: post.url, start_time: post.created_utc };
-                cb(data);
+                cb(null, data);
             });
         }, (err, results) => res.send({ targets: results }))
     ).catch(err => res.send({ "error": "problem retrieving the scenes :(" }))
