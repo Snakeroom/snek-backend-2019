@@ -303,6 +303,10 @@ wss.on("connection", (socket) => {
         state.wsClientCount--
     );
 
+    socket.on("error", (err) =>
+        Sentry.captureException(err)
+    );
+
     state.wsClientCount++;
 });
 
