@@ -11,7 +11,7 @@ block content
             tbody
                 each s in scenes
                     tr
-                        td #{parseInt(s.scene_id) + 1}
+                        td #{parseInt(s.scene_id)}
                         td #{s.fullname}
                         td
                             a.ui.button.red(href="scenes/" + s.scene_id + "/delete") Delete Scene
@@ -22,7 +22,7 @@ block content
                 label Scene
                 select.ui.fluid.dropdown(name="sceneId")
                     each item, index in redditScenes
-                        option(value=index) Scene #{index + 1}
+                        option(value=index) Scene #{index}
             .field
                 label Post Fullname
                 input(name="fullname" placeholder="t3_xxxxxx" type="text")
