@@ -1,3 +1,4 @@
+const asyncio = require("async");
 const http = require("http");
 const express = require("express");
 const session = require("express-session");
@@ -60,20 +61,15 @@ app.use(grant);
 
 app.get("/v1/targets", (req, res) =>
     db.getAllScenes().then(scenes =>
-        res.send({
-            "targets": scenes.map(s => {
-                let scene = parseInt(s.scene_id);
-
-                let data = { scene, chapter: state.currentChapter, fullname: s.fullname };
-
-                if (state.scenes[scene]) {
-                    let extra = state.scenes[scene];
-                    data.extra = { url: extra.gif_url, start_time: extra.start_time, lock_time: extra.lock_time, width: extra.source_width, height: extra.source_height };
-                }
-
-                return data;
-            })
-        })
+        asyncio.map(scenes, (s, cb) => {
+            let scene = parseInt(s.scene_id);
+            let data = { scene, chapter: state.currentChapter, fullname: s.fullname };
+            
+            reddit.fetchPost(s.fullname).then(post => {
+                data.extra = { url: post.url, start_time: post.created_utc };
+                cb(data);
+            });
+        }, result => res.send({ targets: result }))
     ).catch(err => res.send({ "error": "problem retrieving the scenes :(" }))
 );
 
