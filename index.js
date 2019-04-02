@@ -12,7 +12,7 @@ const db = require("./lib/database");
 
 const grantOpts = {
     server: {
-        protocol: "http",
+        protocol: config.protocol || "http",
         host: config.host,
         callback: "/auth/callback",
         transport: "querystring",
