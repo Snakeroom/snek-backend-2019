@@ -145,9 +145,13 @@ app.use("/admin", function(req, res, next) {
             }
         }).catch(err => next(err));
     }).catch(err =>
-        req.reddit.refreshToken().then(() =>
-            res.redirect(req.originalUrl)
-        )
+        req.reddit.refreshToken().then(() => {
+            req.session.user.access_token = req.reddit.access_token;
+
+            req.session.save(() =>
+                res.redirect(req.originalUrl)
+            );
+        })
     ).catch(err =>
         next(err)
     );
