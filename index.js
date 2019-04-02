@@ -42,7 +42,8 @@ reddit.getWebSocket().then(url => {
 
 const state = {
     chapters: [],
-    scenes: []
+    scenes: [],
+    currentChapter: -1
 };
 
 app.set("view engine", "pug");
@@ -63,7 +64,7 @@ app.get("/v1/targets", (req, res) =>
             "targets": scenes.map(s => {
                 let scene = parseInt(s.scene_id);
 
-                let data = { scene, fullname: s.fullname };
+                let data = { scene, chapter: state.currentChapter, fullname: s.fullname };
 
                 if (state.scenes[scene]) {
                     let extra = state.scenes[scene];
@@ -130,11 +131,18 @@ app.use("/admin", function(req, res, next) {
 });
 
 app.get("/admin/dash", (req, res) =>
-    db.fastCount("users").then(function(n) {
-        const stats =
-            {users: n};
+    Promise.all([
+        db.fastCount("users"),
+        db.fastCount("scenes")
+    ]).then(function(n) {
+        const stats = {
+            users: n[0],
+            scenes: n[1],
+            chapter: state.currentChapter,
+            scenes: state.scenes.length
+        };
         
-        return res.render("admin.pug", {stats});
+        return res.render("admin.pug", {stats, scenes: state.scenes});
     })
 );
 
@@ -242,6 +250,7 @@ function parseRedditMessage(msg) {
             chapter.scenes[scene] = msg.payload.remaining_scenes[key];
             state.scenes[scene] = msg.payload.remaining_scenes[key];
             state.chapters[chapterid] = chapter;
+            state.currentChapter = chapterid;
         });
     }
 }

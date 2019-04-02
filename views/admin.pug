@@ -13,5 +13,24 @@ block content
                 .label Total Upvotes
                 .value 0
             .statistic
-                .label Scenes Waiting
-                .value 0
+                .label Snek Scenes Active
+                .value #{stats.scenes}
+            .statistic
+                .label Active Chapter
+                .value #{stats.chapter}
+            .statistic
+                .label Scene Count
+                .value #{stats.scenes}
+    .ui.segment
+        h3.ui.header Chapter Info
+        table.ui.celled.table
+            thead
+                th.one.wide Scene
+                th Top Post
+            tbody
+                each scene, i in scenes
+                    tr
+                        td #{i}
+                        td
+                            a.ui.button.blue(href=scene.gif_url) GIF Link
+                            a.ui.button.blue(href="http://reddit.com/by_id/" + scene.link) Post
