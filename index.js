@@ -175,7 +175,7 @@ app.get("/admin/dash/users", (req, res) =>
 );
 
 app.get("/admin/dash/scenes", (req, res) =>
-    db.getAllScenes().then(scenes => res.render("admin-circles.pug", { scenes, redditScenes: state.scenes }))
+    db.getAllSortedScenes().then(scenes => res.render("admin-circles.pug", { scenes, redditScenes: state.scenes }))
 );
 
 app.post("/admin/dash/scenes", bodyParser.urlencoded({ extended: false }), (req, res, next) =>
