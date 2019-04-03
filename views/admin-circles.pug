@@ -15,6 +15,10 @@ block content
                         td #{s.fullname}
                         td
                             a.ui.button.red(href="scenes/" + s.scene_id + "/delete") Delete Scene
+            tfoot
+                tr: th(colspan="3")
+                    .ui.right.floated.menu
+                        a.ui.button.red(href="scenes/deleteall") Delete All Scenes
     .ui.segment
         h3.ui.header Add New Scene
         p.ui.header Keep in mind that scenes are representative of everyone using the extension and not just the Snakeroom!

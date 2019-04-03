@@ -39,15 +39,23 @@ const app = express();
 const server = http.createServer(app);
 const wss = new ws.WebSocketServer({ server });
 
-reddit.getWebSocket().then(url => {
-    const redditws = new ws.WebSocket(url);
+function connectToRedditSocket() {
+    reddit.getWebSocket().then(url => {
+        const redditws = new ws.WebSocket(url);
 
-    redditws.on("message", (data) => parseRedditMessage( JSON.parse(data) ));
-    redditws.on("error", err => {
-        console.error(err);
-        Sentry.captureException(err);
+        redditws.on("message", (data) => parseRedditMessage( JSON.parse(data) ));
+        redditws.on("error", err => {
+            console.error(err);
+            Sentry.captureException(err);
+        });
+
+        redditws.on("close", () =>
+            setTimeout(connectToRedditSocket, 5000)
+        );
     });
-});
+}
+
+connectToRedditSocket();
 
 const state = {
     chapters: {},
@@ -221,6 +229,16 @@ app.post("/admin/dash/scenes", bodyParser.urlencoded({ extended: false }), (req,
             res.redirect("/admin/dash/scenes");
         })
     ).catch(err => next(err))
+);
+
+app.get("/admin/dash/scenes/deleteall", (req, res, next) =>
+    db.deleteAllScenes()
+        .then(() => {
+            req.scheduleAuditLog("Deleted all scenes.");
+            broadcastScenes();
+
+            res.redirect("/admin/dash/scenes");
+        }).catch(err => next(err))
 );
 
 app.get("/admin/dash/scenes/:id/delete", (req, res, next) =>
