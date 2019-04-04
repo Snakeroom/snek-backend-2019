@@ -1,0 +1,21 @@
+reddit: {
+	client_id: "reddit app client id"
+	client_secret: "reddit app client secret"
+}
+
+protocol: "https"  # protocol for oauth redirects
+host: "my.website.domain"  # host part of oauth redirect url
+secret: "a random collection of letters and maybe numbers"  # session secret
+
+db: {
+	user: "sphere"  # postgres database user
+	password: "my-db-password"  # password of database user
+	database: "sphere"
+	port: 5432
+}
+
+administrators: ["reddit-user-id"]  # user IDs of permanent admins (admin cannot be revoked)
+
+loggedInRedirect: "https://my-cool-website.example"  # url to redirect to after auth is completed
+
+sentry: "optional sentry DSN"  # optional sentry DSN for error logging
